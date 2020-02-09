@@ -175,7 +175,8 @@ namespace PaymentGateway.API.Tests.Features.Payments
 
         public static IEnumerable<object[]> PaymentCollections => new[]
         {
-            new object[] { new List<Payment>(), new List<Payment> { new Payment(), new Payment() } }
+            new object[] { new List<Payment> { new Payment(), new Payment() } },
+            new object[] { new List<Payment> () },
         };
 
         #endregion

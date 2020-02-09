@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hellang.Middleware.ProblemDetails;
+using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,9 +30,10 @@ namespace PaymentGateway
         public void ConfigureServices(IServiceCollection services)
         {
             services
+                .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>())
                 .AddOpenApi()
                 .AddProblemDetails()
-                .AddMediatR(typeof(CreatePayment.Handler).Assembly)
+                .AddMediatR(typeof(CreatePayment.Handler).Assembly)           
                 .AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
