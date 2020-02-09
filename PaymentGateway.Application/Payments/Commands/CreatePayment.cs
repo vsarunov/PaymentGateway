@@ -1,9 +1,8 @@
 ﻿using LanguageExt;
 using LanguageExt.Common;
 using MediatR;
+using PaymentGateway.Application.Common;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +10,7 @@ namespace PaymentGateway.Application.Payments.Commands
 {
     public class CreatePayment
     {
-        public class Command : IRequest<Either<Seq<Error>, int>>
+        public class Command : IRequest<Either<Seq<Failure>, int>>
         {
             public Card CardDetails { get; set; }
             public Money Value { get; set; }
@@ -31,14 +30,14 @@ namespace PaymentGateway.Application.Payments.Commands
 
             public class ExpirationDate
             {
-                public int Year { get; set; }
-                public int Month { get; set; }
+                public short Year { get; set; }
+                public byte Month { get; set; }
             }
         }
 
-        public class Handler : IRequestHandler<Command, Either<Seq<Error>, int>>
+        public class Handler : IRequestHandler<Command, Either<Seq<Failure>, int>>
         {
-            public Task<Either<Seq<Error>, int>> Handle(Command request, CancellationToken cancellationToken)
+            public Task<Either<Seq<Failure>, int>> Handle(Command request, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }

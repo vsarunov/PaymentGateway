@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PaymentGateway.API.Extensions;
+using PaymentGateway.Application.Payments.Queries;
 
 namespace PaymentGateway.API.Features.Payments
 {
@@ -24,17 +26,21 @@ namespace PaymentGateway.API.Features.Payments
         }
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> CreatePaymentAsync([FromBody]CreatePaymentRequest request)
         {
-            throw new NotImplementedException();
+            var result = await _mediator.Send(request.ToCommand());
+
+            return result.ToActionResult();
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<GetPaymentsResponse>> GetPaymentsAsync()
+        public async Task<ActionResult<IEnumerable<GetPaymentsResponse>>> GetPaymentsAsync()
         {
-            throw new NotImplementedException();
+            var result = await _mediator.Send(new GetPayments.Query());
+
+            return Ok(result.ToResponse());
         }
     }
 }

@@ -7,6 +7,7 @@ using PaymentGateway.API.Features.Payments;
 using MediatR;
 using Moq;
 using PaymentGateway.Application.Payments.Commands;
+using PaymentGateway.Application.Common;
 using System.Threading;
 using LanguageExt;
 using LanguageExt.Common;
@@ -36,15 +37,15 @@ namespace PaymentGateway.API.Tests.Features.Payments
         {
             CreatePayment.Command actualCommand = null;
 
-            var createPayment = new Seq<Error>
+            var createPayment = new Seq<Failure>
             {
-                Error.New("Value cannot be negative")
+                Failure.Of(new Payment(), "Value -1 has to be non-negative")
             };
 
             _mocker.GetMock<IMediator>()
                   .Setup(x => x.Send(It.IsAny<CreatePayment.Command>(), It.IsAny<CancellationToken>()))
-                  .Callback<IRequest<Either<Seq<Error>, int>>, CancellationToken>((command, ct) => actualCommand = (CreatePayment.Command)command)
-                  .ReturnsAsync(Left<Seq<Error>, int>(createPayment));
+                  .Callback<IRequest<Either<Seq<Failure>, int>>, CancellationToken>((command, ct) => actualCommand = (CreatePayment.Command)command)
+                  .ReturnsAsync(Left<Seq<Failure>, int>(createPayment));
 
             var request = new CreatePaymentRequest
             {
@@ -92,14 +93,14 @@ namespace PaymentGateway.API.Tests.Features.Payments
         }
 
         [Fact]
-        public async Task CreatePaymentAsync_WhenNoError_ExpectedCreatedAsync()
+        public async Task CreatePaymentAsync_WhenNoError_ExpectedNoContentAsync()
         {
             CreatePayment.Command actualCommand = null;
 
             _mocker.GetMock<IMediator>()
                   .Setup(x => x.Send(It.IsAny<CreatePayment.Command>(), It.IsAny<CancellationToken>()))
-                  .Callback<IRequest<Either<Seq<Error>, int>>, CancellationToken>((command, ct) => actualCommand = (CreatePayment.Command)command)
-                  .ReturnsAsync(Right<Seq<Error>, int>(It.IsAny<int>()));
+                  .Callback<IRequest<Either<Seq<Failure>, int>>, CancellationToken>((command, ct) => actualCommand = (CreatePayment.Command)command)
+                  .ReturnsAsync(Right<Seq<Failure>, int>(It.IsAny<int>()));
 
             var request = new CreatePaymentRequest
             {
@@ -141,7 +142,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
                 }
             };
 
-            response.Should().BeOfType<CreatedResult>();
+            response.Should().BeOfType<NoContentResult>();
             _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<CreatePayment.Command>(), It.IsAny<CancellationToken>()), Times.Once);
             actualCommand.Should().BeEquivalentTo(expectedommand);
         }

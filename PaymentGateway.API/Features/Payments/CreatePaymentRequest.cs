@@ -20,8 +20,8 @@
 
         public class ExpirationDateDto
         {
-            public int Year { get; set; }
-            public int Month { get; set; }
+            public short Year { get; set; }
+            public byte Month { get; set; }
         }
     }
 }
