@@ -8,5 +8,9 @@ namespace PaymentGateway.API.Features.Payments
 {
     public class CreatePaymentRequestValidator: AbstractValidator<CreatePaymentRequest>
     {
+        public CreatePaymentRequestValidator()
+        {
+
+        }
     }
 }

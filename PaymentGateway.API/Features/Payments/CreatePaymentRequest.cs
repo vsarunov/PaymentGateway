@@ -1,9 +1,13 @@
-﻿namespace PaymentGateway.API.Features.Payments
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace PaymentGateway.API.Features.Payments
 {
     public class CreatePaymentRequest
     {
         public CardDto CardDetails { get; set; }
         public MoneyDto Value { get; set; }
+        public DateTime TimeStamp { get; set; }
 
         public class MoneyDto
         {
@@ -20,8 +24,8 @@
 
         public class ExpirationDateDto
         {
-            public short Year { get; set; }
-            public byte Month { get; set; }
+            public int Year { get; set; }
+            public string Month { get; set; }
         }
     }
 }
