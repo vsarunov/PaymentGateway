@@ -287,6 +287,39 @@ namespace PaymentGateway.API.Tests.Features.Payments
             result.IsValid.Should().BeFalse();
         }
 
+        [Fact]
+        public void Validate_TimeStampIsInTheFuture_ExpectedErrors()
+        {
+            var request = ValidPaymentRequest();
+            request.TimeStamp = DateTime.MaxValue;
+
+            var result = _classUnderTest.Validate(request);
+
+            result.IsValid.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Validate_TimeStampIsNotToday_ExpectedErrors()
+        {
+            var request = ValidPaymentRequest();
+            request.TimeStamp = DateTime.MaxValue;
+
+            var result = _classUnderTest.Validate(request);
+
+            result.IsValid.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Validate_TimeStampIsNotPrecise_ExpectedErrors()
+        {
+            var request = ValidPaymentRequest();
+            request.TimeStamp = DateTime.MaxValue;
+
+            var result = _classUnderTest.Validate(request);
+
+            result.IsValid.Should().BeFalse();
+        }
+
         private CreatePaymentRequest ValidPaymentRequest() =>
             new CreatePaymentRequest
             {
