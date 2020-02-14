@@ -12,20 +12,20 @@ namespace PaymentGateway.API.Features.Payments
         public class MoneyDto
         {
             public decimal Amount { get; set; }
-            public string Currency { get; set; }
+            public string ISOCurrencyCode { get; set; }
         }
 
         public class CardDto
         {
             public string Number { get; set; }
-            public short CVV { get; set; }
+            public int CVV { get; set; }
             public ExpirationDateDto Expiration { get; set; }
         }
 
         public class ExpirationDateDto
         {
             public int Year { get; set; }
-            public string Month { get; set; }
+            public int Month { get; set; }
         }
     }
 }

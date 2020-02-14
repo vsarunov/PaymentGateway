@@ -62,7 +62,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
                 Value = new CreatePaymentRequest.MoneyDto
                 {
                     Amount = 12345,
-                    Currency = "EUR"
+                    ISOCurrencyCode = "EUR"
                 }
             };
 
@@ -117,7 +117,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
                 Value = new CreatePaymentRequest.MoneyDto
                 {
                     Amount = 12345,
-                    Currency = "EUR"
+                    ISOCurrencyCode = "EUR"
                 }
             };
 

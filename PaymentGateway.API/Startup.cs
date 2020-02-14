@@ -30,11 +30,11 @@ namespace PaymentGateway
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>())
                 .AddOpenApi()
                 .AddProblemDetails()
-                .AddMediatR(typeof(CreatePayment.Handler).Assembly)           
-                .AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+                .AddMediatR(typeof(CreatePayment.Handler).Assembly)
+                .AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>());
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

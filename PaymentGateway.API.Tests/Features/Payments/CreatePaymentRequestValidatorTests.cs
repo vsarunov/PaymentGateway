@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using FluentValidation.TestHelper;
 using PaymentGateway.API.Features.Payments;
 using System;
 using Xunit;
@@ -26,91 +27,44 @@ namespace PaymentGateway.API.Tests.Features.Payments
         }
 
         [Fact]
+        public void Validate_NullObject_ExpectedErrors()
+        {
+            CreatePaymentRequest request = null;
+
+            var result = _classUnderTest.Validate(request);
+
+            result.IsValid.Should().BeFalse();
+        }
+
+        [Fact]
         public void Validate_WhenNoCardDetailsSupplied_ExpectedErrors()
         {
-            var request = ValidPaymentRequest();
-            request.CardDetails = null;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
+            _classUnderTest.ShouldHaveValidationErrorFor(r => r.CardDetails, null as CreatePaymentRequest.CardDto);
         }
 
-        [Fact]
-        public void Validate_NegativeCVV_ExpectedErrors()
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        [InlineData(99)]
+        [InlineData(10000)]
+        public void Validate_CVVInvalidValues_ExpectedErrors(int errorValue)
         {
             var request = ValidPaymentRequest();
-            request.CardDetails.CVV = -1;
+            request.CardDetails.CVV = errorValue;
 
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
+            _classUnderTest.ShouldHaveValidationErrorFor(r => r.CardDetails.CVV, request);
         }
 
-        [Fact]
-        public void Validate_ZeorCVV_ExpectedErrors()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("78549621")]
+        public void Validate_CardNumberInvalidValues_ExpectedErrors(string errorCardNumber)
         {
             var request = ValidPaymentRequest();
-            request.CardDetails.CVV = 0;
+            request.CardDetails.Number = errorCardNumber;
 
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_LessThan3DigitsCVV_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.CardDetails.CVV = 99;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_MoreThan4DigitsCVV_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.CardDetails.CVV = 1000;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_CardNumberNull_ExpectedErrors()
-        {
-            CreatePaymentRequest request = ValidPaymentRequest();
-            request.CardDetails.Number = null;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_CardNumberEmpty_ExpectedErrors()
-        {
-            CreatePaymentRequest request = ValidPaymentRequest();
-            request.CardDetails.Number = string.Empty;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_InvalidCardNumber_ExpectedErrors()
-        {
-            CreatePaymentRequest request = ValidPaymentRequest();
-            request.CardDetails.Number = "78549621";
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
+            _classUnderTest.ShouldHaveValidationErrorFor(r => r.CardDetails.Number, request);
         }
 
         [Fact]
@@ -124,67 +78,28 @@ namespace PaymentGateway.API.Tests.Features.Payments
             result.IsValid.Should().BeFalse();
         }
 
-        [Fact]
-        public void Validate_NotValidMonth_ExpectedErrors()
+        [Theory]
+        [InlineData(13)]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void Validate_ExpirationInvalidMonth_ExpectedErrors(int errorMonth)
         {
             var request = ValidPaymentRequest();
-            request.CardDetails.Expiration.Month = "13";
+            request.CardDetails.Expiration.Month = errorMonth;
 
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
+            _classUnderTest.ShouldHaveValidationErrorFor(r => r.CardDetails.Expiration.Month, request);
         }
 
-        [Fact]
-        public void Validate_NullMonth_ExpectedErrors()
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        [InlineData(1999)]
+        public void Validate_ExpirationInvalidYear_ExpectedErrors(int errorYear)
         {
             var request = ValidPaymentRequest();
-            request.CardDetails.Expiration.Month = null;
+            request.CardDetails.Expiration.Year = errorYear;
 
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_EmptyMonth_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.CardDetails.Expiration.Month = string.Empty;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_NegativeYear_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.CardDetails.Expiration.Year = -1;
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_ZeorYear_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.CardDetails.Expiration.Year = 0;
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_ExpiredYear_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.CardDetails.Expiration.Year = 1999;
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
+            _classUnderTest.ShouldHaveValidationErrorFor(r => r.CardDetails.Expiration.Year, request);
         }
 
         [Fact]
@@ -192,14 +107,14 @@ namespace PaymentGateway.API.Tests.Features.Payments
         {
             var request = ValidPaymentRequest();
             request.CardDetails.Expiration.Year = DateTime.Now.Year;
-            request.CardDetails.Expiration.Month = DateTime.Now.AddMonths(-1).Month.ToString();
+            request.CardDetails.Expiration.Month = DateTime.Now.AddMonths(-1).Month;
             var result = _classUnderTest.Validate(request);
 
             result.IsValid.Should().BeFalse();
         }
 
         [Fact]
-        public void Validate_NullAmount_ExpectedErrors()
+        public void Validate_NullValueForMoney_ExpectedErrors()
         {
             var request = ValidPaymentRequest();
             request.Value = null;
@@ -209,60 +124,27 @@ namespace PaymentGateway.API.Tests.Features.Payments
             result.IsValid.Should().BeFalse();
         }
 
-        [Fact]
-        public void Validate_ZeroAmount_ExpectedErrors()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void Validate_InvalidAmount_ExpectedErrors(decimal errorAmount)
         {
             var request = ValidPaymentRequest();
-            request.Value.Amount = 0;
+            request.Value.Amount = errorAmount;
 
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
+            _classUnderTest.ShouldHaveValidationErrorFor(r => r.Value.Amount, request);
         }
 
-        [Fact]
-        public void Validate_NegativeAmount_ExpectedErrors()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("KKKKKL")]
+        public void Validate_InvalidISOCurrencyCode_ExpectedErrors(string errorISOCurrencyCode)
         {
             var request = ValidPaymentRequest();
-            request.Value.Amount = -1;
+            request.Value.ISOCurrencyCode = errorISOCurrencyCode;
 
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_NullCurrency_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.Value.Currency = null;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-
-        [Fact]
-        public void Validate_EmptyCurrency_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.Value.Currency = string.Empty;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_NonExistingCurrency_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.Value.Currency = "KKKKKL";
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
+            _classUnderTest.ShouldHaveValidationErrorFor(r => r.Value.ISOCurrencyCode, request);
         }
 
         [Fact]
@@ -291,18 +173,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
         public void Validate_TimeStampIsInTheFuture_ExpectedErrors()
         {
             var request = ValidPaymentRequest();
-            request.TimeStamp = DateTime.MaxValue;
-
-            var result = _classUnderTest.Validate(request);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Validate_TimeStampIsNotToday_ExpectedErrors()
-        {
-            var request = ValidPaymentRequest();
-            request.TimeStamp = DateTime.MaxValue;
+            request.TimeStamp = DateTime.UtcNow.AddDays(1);
 
             var result = _classUnderTest.Validate(request);
 
@@ -313,7 +184,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
         public void Validate_TimeStampIsNotPrecise_ExpectedErrors()
         {
             var request = ValidPaymentRequest();
-            request.TimeStamp = DateTime.MaxValue;
+            request.TimeStamp = DateTime.UtcNow.Date;
 
             var result = _classUnderTest.Validate(request);
 
@@ -328,7 +199,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
                     CVV = 514,
                     Expiration = new CreatePaymentRequest.ExpirationDateDto
                     {
-                        Month = "03",
+                        Month = 3,
                         Year = DateTime.Now.AddYears(3).Year
                     },
                     Number = "1111-2222-3333-4444"
@@ -336,7 +207,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
                 Value = new CreatePaymentRequest.MoneyDto
                 {
                     Amount = 150,
-                    Currency = "EUR"
+                    ISOCurrencyCode = "EUR"
                 },
                 TimeStamp = DateTime.Now
             };

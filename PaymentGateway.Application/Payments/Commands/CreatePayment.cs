@@ -24,14 +24,14 @@ namespace PaymentGateway.Application.Payments.Commands
             public class Card
             {
                 public string Number { get; set; }
-                public short CVV { get; set; }
+                public int CVV { get; set; }
                 public ExpirationDate Expiration { get; set; }
             }
 
             public class ExpirationDate
             {
-                public short Year { get; set; }
-                public byte Month { get; set; }
+                public int Year { get; set; }
+                public int Month { get; set; }
             }
         }
 

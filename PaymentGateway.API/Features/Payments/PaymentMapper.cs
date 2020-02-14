@@ -24,7 +24,7 @@ namespace PaymentGateway.API.Features.Payments
                 Value = new CreatePayment.Command.Money
                 {
                     Amount = request.Value.Amount,
-                    Currency = request.Value.Currency
+                    Currency = request.Value.ISOCurrencyCode
                 }
             };
         }
