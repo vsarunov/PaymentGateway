@@ -32,8 +32,10 @@ namespace PaymentGateway
             services
                 .AddOpenApi()
                 .AddProblemDetails()
+                .AddAuthentication(Configuration)
                 .AddMediatR(typeof(CreatePayment.Handler).Assembly)
-                .AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddMvc(options => options.AddAuthorizationFilter(Configuration))
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>());
         }
 
@@ -50,6 +52,7 @@ namespace PaymentGateway
             }
 
             app.UseHttpsRedirection()
+               .UseAuthentication()
                .UseMvc()
                .UseProblemDetails();
         }
