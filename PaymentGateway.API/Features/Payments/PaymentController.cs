@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +28,15 @@ namespace PaymentGateway.API.Features.Payments
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> CreatePaymentAsync([FromBody]CreatePaymentRequest request)
         {
-            var result = await _mediator.Send(request.ToCommand());
+            // This user Id getting could and should be done better. However just to keep the contract keeping it here.
+            var userId = User.FindFirst("sub")?.Value;
+
+            if (userId == null)
+            {
+                return BadRequest("User not identified");
+            }
+
+            var result = await _mediator.Send(request.ToCommand(new Guid(userId)));
 
             return result.ToActionResult();
         }
@@ -36,7 +45,15 @@ namespace PaymentGateway.API.Features.Payments
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<GetPaymentsResponse>>> GetPaymentsAsync()
         {
-            var result = await _mediator.Send(new GetPayments.Query());
+            // This user Id getting could and should be done better. However just to keep the contract keeping it here.
+            var userId = User.FindFirst("sub")?.Value;
+
+            if (userId == null)
+            {
+                return BadRequest("User not identified");
+            }
+
+            var result = await _mediator.Send(new GetPayments.Query(new Guid(userId)));
 
             return Ok(result.ToResponse());
         }

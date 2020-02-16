@@ -1,5 +1,6 @@
 ﻿using PaymentGateway.Application.Payments.Commands;
 using PaymentGateway.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,7 +8,7 @@ namespace PaymentGateway.API.Features.Payments
 {
     public static class PaymentMapper
     {
-        internal static CreatePayment.Command ToCommand(this CreatePaymentRequest request)
+        internal static CreatePayment.Command ToCommand(this CreatePaymentRequest request, Guid userId)
         {
             return new CreatePayment.Command
             {
@@ -25,7 +26,9 @@ namespace PaymentGateway.API.Features.Payments
                 {
                     Amount = request.Value.Amount,
                     Currency = request.Value.ISOCurrencyCode
-                }
+                },
+                TimeStamp = request.TimeStamp,
+                UserId = userId
             };
         }
 

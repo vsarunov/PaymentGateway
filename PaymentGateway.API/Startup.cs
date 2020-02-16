@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hellang.Middleware.ProblemDetails;
+﻿using Hellang.Middleware.ProblemDetails;
 using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using PaymentGateway.API.Extensions;
 using PaymentGateway.Application.Payments.Commands;
 
@@ -34,6 +27,7 @@ namespace PaymentGateway
                 .AddProblemDetails()
                 .AddAuthentication(Configuration)
                 .AddMediatR(typeof(CreatePayment.Handler).Assembly)
+                .AddRepositoryDependencies()
                 .AddMvc(options => options.AddAuthorizationFilter(Configuration))
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>());

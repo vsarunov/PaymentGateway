@@ -1,32 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PaymentGateway.Domain
 {
     public class Payment
     {
-        public Card CardDetails { get; set; }
-        public Money Value { get; set; }
-        public DateTime TimeStamp { get; set; }
+        public long Id { get; }
+        public Guid UserId { get; }
+        public Card CardDetails { get; }
+        public Money Value { get; }
+        public DateTime TimeStamp { get; }
 
-        public class Money
+        public Payment(long id, Guid userId, Card cardDetails, Money value, DateTime timeStamp)
         {
-            public decimal Amount { get; set; }
-            public string Currency { get; set; }
+            Id = id;
+            UserId = userId;
+            CardDetails = cardDetails ?? throw new ArgumentNullException(nameof(cardDetails));
+            Value = value ?? throw new ArgumentNullException(nameof(value));
+            TimeStamp = timeStamp;
         }
 
-        public class Card
+        public Payment(Guid userId, Card cardDetails, Money value, DateTime timeStamp)
         {
-            public string Number { get; set; }
-            public short CVV { get; set; }
-            public ExpirationDate Expiration { get; set; }
+            UserId = userId;
+            CardDetails = cardDetails ?? throw new ArgumentNullException(nameof(cardDetails));
+            Value = value ?? throw new ArgumentNullException(nameof(value));
+            TimeStamp = timeStamp;
         }
 
-        public class ExpirationDate
+        public override string ToString()
         {
-            public int Year { get; set; }
-            public int Month { get; set; }
+            return $"Payment{Id},{Value.Amount}.{Value.Currency},{TimeStamp}";
         }
     }
 }

@@ -39,7 +39,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
 
             var createPayment = new Seq<Failure>
             {
-                Failure.Of(new Payment(), "Value -1 has to be non-negative")
+                Failure.Of(Mock.Of<Payment>(), "Value -1 has to be non-negative")
             };
 
             _mocker.GetMock<IMediator>()
@@ -175,7 +175,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
 
         public static IEnumerable<object[]> PaymentCollections => new[]
         {
-            new object[] { new List<Payment> { new Payment(), new Payment() } },
+            new object[] { new List<Payment> { Mock.Of<Payment>(), Mock.Of<Payment>() } },
             new object[] { new List<Payment> () },
         };
 
