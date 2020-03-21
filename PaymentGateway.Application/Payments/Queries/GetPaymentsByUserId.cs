@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.Payments.Queries
 {
-    public class GetPayments
+    public class GetPaymentsByUserId
     {
         public class Query : IRequest<IEnumerable<Payment>>
         {

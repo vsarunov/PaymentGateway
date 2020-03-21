@@ -35,7 +35,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
         [Fact]
         public async Task CreatePaymentAsync_WhenReturnsError_ExpectedBadRequestAsync()
         {
-            CreatePayment.Command actualCommand = null;
+            CreatePayment actualCommand = null;
 
             var createPayment = new Seq<Failure>
             {
@@ -43,8 +43,8 @@ namespace PaymentGateway.API.Tests.Features.Payments
             };
 
             _mocker.GetMock<IMediator>()
-                  .Setup(x => x.Send(It.IsAny<CreatePayment.Command>(), It.IsAny<CancellationToken>()))
-                  .Callback<IRequest<Either<Seq<Failure>, int>>, CancellationToken>((command, ct) => actualCommand = (CreatePayment.Command)command)
+                  .Setup(x => x.Send(It.IsAny<CreatePayment>(), It.IsAny<CancellationToken>()))
+                  .Callback<IRequest<Either<Seq<Failure>, int>>, CancellationToken>((command, ct) => actualCommand = (CreatePayment)command)
                   .ReturnsAsync(Left<Seq<Failure>, int>(createPayment));
 
             var request = new CreatePaymentRequest
@@ -68,19 +68,19 @@ namespace PaymentGateway.API.Tests.Features.Payments
 
             var response = await _classUnderTest.CreatePaymentAsync(request);
 
-            var expectedommand = new CreatePayment.Command
+            var expectedommand = new CreatePayment
             {
-                CardDetails = new CreatePayment.Command.Card
+                CardDetails = new CreatePayment.Card
                 {
                     CVV = 123,
-                    Expiration = new CreatePayment.Command.ExpirationDate
+                    Expiration = new CreatePayment.ExpirationDate
                     {
                         Month = 3,
                         Year = 2033
                     },
                     Number = "1234-5678-9101-1121"
                 },
-                Value = new CreatePayment.Command.Money
+                Value = new CreatePayment.Money
                 {
                     Amount = 12345,
                     Currency = "EUR"
@@ -88,18 +88,18 @@ namespace PaymentGateway.API.Tests.Features.Payments
             };
 
             response.Should().BeOfType<BadRequestObjectResult>();
-            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<CreatePayment.Command>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<CreatePayment>(), It.IsAny<CancellationToken>()), Times.Once);
             actualCommand.Should().BeEquivalentTo(expectedommand);
         }
 
         [Fact]
         public async Task CreatePaymentAsync_WhenNoError_ExpectedNoContentAsync()
         {
-            CreatePayment.Command actualCommand = null;
+            CreatePayment actualCommand = null;
 
             _mocker.GetMock<IMediator>()
-                  .Setup(x => x.Send(It.IsAny<CreatePayment.Command>(), It.IsAny<CancellationToken>()))
-                  .Callback<IRequest<Either<Seq<Failure>, int>>, CancellationToken>((command, ct) => actualCommand = (CreatePayment.Command)command)
+                  .Setup(x => x.Send(It.IsAny<CreatePayment>(), It.IsAny<CancellationToken>()))
+                  .Callback<IRequest<Either<Seq<Failure>, int>>, CancellationToken>((command, ct) => actualCommand = (CreatePayment)command)
                   .ReturnsAsync(Right<Seq<Failure>, int>(It.IsAny<int>()));
 
             var request = new CreatePaymentRequest
@@ -123,19 +123,19 @@ namespace PaymentGateway.API.Tests.Features.Payments
 
             var response = await _classUnderTest.CreatePaymentAsync(request);
 
-            var expectedommand = new CreatePayment.Command
+            var expectedommand = new CreatePayment
             {
-                CardDetails = new CreatePayment.Command.Card
+                CardDetails = new CreatePayment.Card
                 {
                     CVV = 123,
-                    Expiration = new CreatePayment.Command.ExpirationDate
+                    Expiration = new CreatePayment.ExpirationDate
                     {
                         Month = 3,
                         Year = 2033
                     },
                     Number = "1234-5678-9101-1121"
                 },
-                Value = new CreatePayment.Command.Money
+                Value = new CreatePayment.Money
                 {
                     Amount = 12345,
                     Currency = "EUR"
@@ -143,7 +143,7 @@ namespace PaymentGateway.API.Tests.Features.Payments
             };
 
             response.Should().BeOfType<NoContentResult>();
-            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<CreatePayment.Command>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<CreatePayment>(), It.IsAny<CancellationToken>()), Times.Once);
             actualCommand.Should().BeEquivalentTo(expectedommand);
         }
 
@@ -155,18 +155,18 @@ namespace PaymentGateway.API.Tests.Features.Payments
         [MemberData(nameof(PaymentCollections))]
         public async Task GetPaymentsAsync_GivenValidRequest_ReturnsEntitiesAsync(IEnumerable<Payment> queryResponseMock)
         {
-            GetPayments.Query actualQuery = null;
+            GetPaymentsByUserId.Query actualQuery = null;
 
             _mocker.GetMock<IMediator>()
-                  .Setup(x => x.Send(It.IsAny<GetPayments.Query>(), It.IsAny<CancellationToken>()))
-                  .Callback<IRequest<IEnumerable<Payment>>, CancellationToken>((query, ct) => actualQuery = (GetPayments.Query)query)
+                  .Setup(x => x.Send(It.IsAny<GetPaymentsByUserId.Query>(), It.IsAny<CancellationToken>()))
+                  .Callback<IRequest<IEnumerable<Payment>>, CancellationToken>((query, ct) => actualQuery = (GetPaymentsByUserId.Query)query)
                   .ReturnsAsync(queryResponseMock);
 
             var response = await _classUnderTest.GetPaymentsAsync();
 
             var okResult = response.Result.Should().BeOfType<OkObjectResult>().Subject;
             okResult.Value.Should().BeEquivalentTo(queryResponseMock);
-            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<GetPayments.Query>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<GetPaymentsByUserId.Query>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         #endregion

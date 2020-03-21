@@ -16,15 +16,15 @@ using Xunit.Categories;
 namespace PaymentGateway.Application.Tests.Payments.Commands
 {
     [UnitTest]
-    public class CreatePaymentTests
+    public class CreatePaymentHandlerTests
     {
-        private readonly CreatePayment.Handler _classUnderTest;
+        private readonly CreatePaymentHandler _classUnderTest;
         private readonly AutoMoqer _mocker;
 
-        public CreatePaymentTests()
+        public CreatePaymentHandlerTests()
         {
             _mocker = new AutoMoqer();
-            _classUnderTest = _mocker.Resolve<CreatePayment.Handler>();
+            _classUnderTest = _mocker.Resolve<CreatePaymentHandler>();
         }
 
         [Fact]
@@ -40,19 +40,19 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                   .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
                   .ReturnsAsync(paymentListMock);
 
-            var requestMock = new CreatePayment.Command
+            var requestMock = new CreatePayment
             {
-                CardDetails = new CreatePayment.Command.Card
+                CardDetails = new CreatePayment.Card
                 {
                     CVV = 541,
                     Number = "1234567891234567",
-                    Expiration = new CreatePayment.Command.ExpirationDate
+                    Expiration = new CreatePayment.ExpirationDate
                     {
                         Month = 1,
                         Year = 2025,
                     }
                 },
-                Value = new CreatePayment.Command.Money
+                Value = new CreatePayment.Money
                 {
                     Amount = 25,
                     Currency = "EUR"
@@ -82,19 +82,19 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                       .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
                       .ReturnsAsync(paymentListMock);
 
-            var requestMock = new CreatePayment.Command
+            var requestMock = new CreatePayment
             {
-                CardDetails = new CreatePayment.Command.Card
+                CardDetails = new CreatePayment.Card
                 {
                     CVV = 541,
                     Number = "1234567891234567",
-                    Expiration = new CreatePayment.Command.ExpirationDate
+                    Expiration = new CreatePayment.ExpirationDate
                     {
                         Month = 1,
                         Year = 2025,
                     }
                 },
-                Value = new CreatePayment.Command.Money
+                Value = new CreatePayment.Money
                 {
                     Amount = 25,
                     Currency = "EUR"
@@ -126,19 +126,19 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                       .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
                       .ReturnsAsync(paymentListMock);
 
-            var requestMock = new CreatePayment.Command
+            var requestMock = new CreatePayment
             {
-                CardDetails = new CreatePayment.Command.Card
+                CardDetails = new CreatePayment.Card
                 {
                     CVV = 541,
                     Number = "1234567891234567",
-                    Expiration = new CreatePayment.Command.ExpirationDate
+                    Expiration = new CreatePayment.ExpirationDate
                     {
                         Month = 1,
                         Year = 2025,
                     }
                 },
-                Value = new CreatePayment.Command.Money
+                Value = new CreatePayment.Money
                 {
                     Amount = 25,
                     Currency = "EUR"
@@ -174,19 +174,19 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                       .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
                       .ReturnsAsync(paymentListMock);
 
-            var requestMock = new CreatePayment.Command
+            var requestMock = new CreatePayment
             {
-                CardDetails = new CreatePayment.Command.Card
+                CardDetails = new CreatePayment.Card
                 {
                     CVV = 541,
                     Number = "1234567891234567",
-                    Expiration = new CreatePayment.Command.ExpirationDate
+                    Expiration = new CreatePayment.ExpirationDate
                     {
                         Month = 1,
                         Year = 2025,
                     }
                 },
-                Value = new CreatePayment.Command.Money
+                Value = new CreatePayment.Money
                 {
                     Amount = 25,
                     Currency = "EUR"
@@ -216,19 +216,19 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                   .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
                   .ReturnsAsync(paymentListMock);
 
-            var requestMock = new CreatePayment.Command
+            var requestMock = new CreatePayment
             {
-                CardDetails = new CreatePayment.Command.Card
+                CardDetails = new CreatePayment.Card
                 {
                     CVV = 541,
                     Number = "1234567891234567",
-                    Expiration = new CreatePayment.Command.ExpirationDate
+                    Expiration = new CreatePayment.ExpirationDate
                     {
                         Month = 1,
                         Year = 2025,
                     }
                 },
-                Value = new CreatePayment.Command.Money
+                Value = new CreatePayment.Money
                 {
                     Amount = 25,
                     Currency = "EUR"

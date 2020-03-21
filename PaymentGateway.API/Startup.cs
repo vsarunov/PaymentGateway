@@ -26,7 +26,7 @@ namespace PaymentGateway
                 .AddOpenApi()
                 .AddProblemDetails()
                 .AddAuthentication(Configuration)
-                .AddMediatR(typeof(CreatePayment.Handler).Assembly)
+                .AddMediatR(typeof(CreatePaymentHandler).Assembly)
                 .AddRepositoryDependencies()
                 .AddMvc(options => options.AddAuthorizationFilter(Configuration))
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)

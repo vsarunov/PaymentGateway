@@ -53,7 +53,7 @@ namespace PaymentGateway.API.Features.Payments
                 return BadRequest("User not identified");
             }
 
-            var result = await _mediator.Send(new GetPayments.Query(new Guid(userId)));
+            var result = await _mediator.Send(new GetPaymentsByUserId.Query(new Guid(userId)));
 
             return Ok(result.ToResponse());
         }
