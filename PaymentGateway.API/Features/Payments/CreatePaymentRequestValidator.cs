@@ -8,6 +8,12 @@ namespace PaymentGateway.API.Features.Payments
 {
     public class CreatePaymentRequestValidator : AbstractValidator<CreatePaymentRequest>
     {
+        private const int CVVCeiling = 10000;
+        private const int CVVFloor = 99;
+        private const int MinPaymentAmount = 1;
+        private const int MinMonth = 1;
+        private const int MaxMonth = 12;
+
         public override FluentValidation.Results.ValidationResult Validate(ValidationContext<CreatePaymentRequest> context)
         {
             return (context.InstanceToValidate == null)
@@ -21,7 +27,7 @@ namespace PaymentGateway.API.Features.Payments
             RuleFor(x => x.Value).NotNull().SetValidator(new MoneyDtoValidator());
             RuleFor(x => x.TimeStamp)
                 .Must(BeValidDate).WithMessage("{PropertyName} Must be a valid date time")
-                .Must(BeToday).WithMessage("{PropertyName} Must Be todays date time")
+                .Must(BeToday).WithMessage("{PropertyName} Must be todays date time")
                 .Must(BePrecise).WithMessage("{PropertyName} Must be a precise")
                 .WithName(nameof(CreatePaymentRequest.TimeStamp));
         }
@@ -45,10 +51,9 @@ namespace PaymentGateway.API.Features.Payments
         {
             public CardDtoValidator()
             {
-                RuleFor(x => x.CVV).GreaterThan(99).LessThan(10000);
+                RuleFor(x => x.CVV).GreaterThan(CVVFloor).LessThan(CVVCeiling);
                 RuleFor(x => x.Number).NotEmpty().Must(new CreditCardAttribute().IsValid)
-                    .WithMessage("{PropertyName} Card number is not valid")
-                    .WithName(nameof(CreatePaymentRequest.CardDto.Number));
+                    .WithMessage("Card number is not valid");
                 RuleFor(x => x.Expiration).NotNull().SetValidator(new ExpirationDateDtoValidator());
             }
         }
@@ -57,7 +62,7 @@ namespace PaymentGateway.API.Features.Payments
         {
             public MoneyDtoValidator()
             {
-                RuleFor(x => x.Amount).GreaterThan(0);
+                RuleFor(x => x.Amount).GreaterThanOrEqualTo(MinPaymentAmount);
                 RuleFor(x => x.ISOCurrencyCode)
                     .Must(BeValidISOCurrencyCode)
                     .WithMessage("{PropertyName} Must be valid ISO currency code")
@@ -87,12 +92,12 @@ namespace PaymentGateway.API.Features.Payments
             {
                 RuleFor(x => x.Year).GreaterThanOrEqualTo(DateTime.UtcNow.Year).DependentRules(() =>
                 {
-                    RuleFor(x => x.Month).GreaterThanOrEqualTo(1).LessThanOrEqualTo(12)
+                    RuleFor(x => x.Month).GreaterThanOrEqualTo(MinMonth).LessThanOrEqualTo(MaxMonth)
                     .DependentRules(() =>
                     {
                         RuleFor(x => new DateTime(x.Year, x.Month, 1)).Must(BeInTheFuture).WithMessage("Card expired");
                     });
-                });            
+                });
             }
 
             private bool BeInTheFuture(DateTime dateTime)

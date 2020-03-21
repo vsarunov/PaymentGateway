@@ -1,0 +1,1342 @@
+{
+	"info": {
+		"_postman_id": "0a42d2cf-6e26-487c-a58e-a488cc908906",
+		"name": "PaymentGateway",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Read",
+			"item": [
+				{
+					"name": "200 - Ok",
+					"item": [
+						{
+							"name": "Get Payments",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gatewayUrl}}/payment",
+									"host": [
+										"{{gatewayUrl}}"
+									],
+									"path": [
+										"payment"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "c9509a17-a405-4277-9210-8174d64ca8c2",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "cfbeb046-5f21-4b28-9703-cb3df21beafb",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('should return 200 and json', function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.be.json;",
+									"});"
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "e53bb7b3-fe50-4b47-acf2-5893ce34ae1c",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "598a1c0e-61c5-4eb4-b0d7-46f7b8ea0562",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Create",
+			"item": [
+				{
+					"name": "200 - Ok",
+					"item": [
+						{
+							"name": "Create Payment - Success",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+										"exec": [
+											"var yearsToAddToCardExpirationDate = 1;",
+											"",
+											"var paymentTimeStamp = new Date();",
+											"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+											"",
+											"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+											"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gatewayUrl}}/payment",
+									"host": [
+										"{{gatewayUrl}}"
+									],
+									"path": [
+										"payment"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "02f7a2d0-66b8-459f-b264-c87ff641a577",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "0c95ba85-e225-416a-8262-d7bed41c4063",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('should return 204 and json', function() {",
+									"    pm.response.to.have.status(204);",
+									"    pm.response.to.be.json;",
+									"});"
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "400 - Bad Request",
+					"item": [
+						{
+							"name": "Invalid TimeStamp",
+							"item": [
+								{
+									"name": "Create Payment - TimeStamp in the past",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var daysToMinusFromTimeStamp = -1;",
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"paymentTimeStamp.setDate(paymentTimeStamp.getDate() - daysToMinusFromTimeStamp);",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - TimeStamp is not precise",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date(new Date().getFullYear(),new Date().getMonth() , new Date().getDate());",
+													"",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp.toLocaleDateString(\"en-UK\"));",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - TimeStamp is invalid date",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var invalidDate = \"01/01/0001\";",
+													"pm.globals.set(\"paymentTimeStamp\", invalidDate);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Invalid Card details",
+							"item": [
+								{
+									"name": "Create Payment - CVV less than allowed Min",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 34,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - CVV more than allowed Max",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 99999,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - Card Number Invalid",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1\",\n\t\t\"cvv\": 991,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - Card Number Invalid Copy",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1\",\n\t\t\"cvv\": 991,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - Expired Card Year in the past",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = -1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - Expired Card Same year month in the past",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 0;",
+													"var monthsToAddToCardExpirationDate = -1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"var cardExpirationMonth = (new Date()).getMonth() + monthsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);",
+													"pm.globals.set(\"cardExpirationMonth\", cardExpirationMonth);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": {{cardExpirationMonth}}\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - Negative amount",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": -1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - Zero amount",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 0,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Payment - Non existing ISO currency code",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+												"exec": [
+													"var yearsToAddToCardExpirationDate = 1;",
+													"",
+													"var paymentTimeStamp = new Date();",
+													"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+													"",
+													"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+													"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"CCC\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{gatewayUrl}}/payment",
+											"host": [
+												"{{gatewayUrl}}"
+											],
+											"path": [
+												"payment"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Create Payment - Payment already exists",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+										"exec": [
+											"var yearsToAddToCardExpirationDate = 1;",
+											"",
+											"var paymentTimeStamp = new Date();",
+											"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+											"",
+											"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+											"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);",
+											"",
+											"",
+											"pm.sendRequest({",
+											"      url:  pm.environment.get(\"gatewayUrl\") + \"/payment\",",
+											"      method: 'POST',",
+											"      header: {",
+											"        'Accept': 'application/json',",
+											"        'Content-Type': 'application/x-www-form-urlencoded',",
+											"        'Authorization': \"Bearer \" + pm.environment.get(\"access_token\")",
+											"      },",
+											"      body: {",
+											"        \"cardDetails\": {",
+											"\t\t\"number\": \"1234-5678-9012-3452\",",
+											"\t\t\"cvv\": 345,",
+											"\t\t\"expiration\": {",
+											"\t\t\t\"year\": cardExpirationYear,",
+											"\t\t\t\"month\": 1",
+											"\t\t}",
+											"    \t},",
+											"    \t\"value\": {",
+											"    \t\t\"amount\": 1245.5,",
+											"    \t\t\"isoCurrencyCode\": \"GBP\"",
+											"    \t},",
+											"    \t\"timeStamp\": paymentTimeStamp",
+											"      }",
+											"  }, function (err, res) {",
+											"        if(err){",
+											"            console.log(err);",
+											"        }",
+											"  });"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gatewayUrl}}/payment",
+									"host": [
+										"{{gatewayUrl}}"
+									],
+									"path": [
+										"payment"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "618fd712-fed3-445f-889b-1c7b1d6c7403",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('should return 400 and json', function() {",
+									"    pm.response.to.have.status(400);",
+									"    pm.response.to.be.json;",
+									"});"
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "401 - Unauthorized",
+					"item": [
+						{
+							"name": "Create Payment - No authorization token supplied",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+										"exec": [
+											"var yearsToAddToCardExpirationDate = 1;",
+											"",
+											"var paymentTimeStamp = new Date();",
+											"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+											"",
+											"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+											"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gatewayUrl}}/payment",
+									"host": [
+										"{{gatewayUrl}}"
+									],
+									"path": [
+										"payment"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Payment - Invalid token supplied",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "5b7e5c8c-6193-4149-a22d-e20a4f71779e",
+										"exec": [
+											"var yearsToAddToCardExpirationDate = 1;",
+											"",
+											"var paymentTimeStamp = new Date();",
+											"pm.globals.set(\"paymentTimeStamp\", paymentTimeStamp);",
+											"",
+											"var cardExpirationYear = (new Date()).getFullYear() + yearsToAddToCardExpirationDate;",
+											"pm.globals.set(\"cardExpirationYear\", cardExpirationYear);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyaWQiOiJqb2huLmRvZSJ9.CuScq77_iCP4XsYGCMgGnQiATOmQwu_rR1LEB2Pcd_I",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"cardDetails\": {\n\t\t\"number\": \"1234-5678-9012-3452\",\n\t\t\"cvv\": 345,\n\t\t\"expiration\": {\n\t\t\t\"year\": {{cardExpirationYear}},\n\t\t\t\"month\": 1\n\t\t}\n\t},\n\t\"value\": {\n\t\t\"amount\": 1245.5,\n\t\t\"isoCurrencyCode\": \"GBP\"\n\t},\n\t\"timeStamp\": \"{{paymentTimeStamp}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gatewayUrl}}/payment",
+									"host": [
+										"{{gatewayUrl}}"
+									],
+									"path": [
+										"payment"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "dd8385de-b5e5-4a57-a17d-53b58db087d7",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "319e017e-9fb2-49f3-81d4-61992cec2337",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('should return 401', function() {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Get token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "337a215c-42b1-4e36-9793-ddce5076782d",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"access_token\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "{{latestUserName}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{latestPassword}}",
+							"type": "text"
+						},
+						{
+							"key": "scope",
+							"value": "PaymentGateway.API openid",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "paymentgateway.API",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "paymentgateway.secret",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{authorizationUrl}}/connect/token",
+					"host": [
+						"{{authorizationUrl}}"
+					],
+					"path": [
+						"connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "35eb8647-dd95-40c8-89ca-88f087763f10",
+						"exec": [
+							"var jsonData = JSON.parse(request.data);",
+							"pm.environment.set(\"latestUserName\", jsonData.username);",
+							"pm.environment.set(\"latestPassword\", jsonData.password);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "a44c4039-e731-48d2-9f91-619ecc04dae0",
+						"exec": [
+							"var min = Math.ceil(1);\r",
+							"var max = Math.floor(100);\r",
+							"var randomUserName = \"test\" + Math.floor(Math.random() * (max - min + 1)) + min;\r",
+							"pm.globals.set(\"randomUserName\", randomUserName);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"firstName\": \"test\",\n\t\"username\": \"{{randomUserName}}\", \n\t\"email\": \"test@gmail.com\",\n\t\"lastName\": \"test\", \n\t\"password\": \"T@st12345\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:44361/users",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44361",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
