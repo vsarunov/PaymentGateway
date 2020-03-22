@@ -1,7 +1,11 @@
 ﻿using AutoMoqCore;
 using FluentAssertions;
+using LanguageExt;
 using LanguageExt.UnitTesting;
+using MediatR;
 using Moq;
+using PaymentGateway.Application.Banks.Queries;
+using PaymentGateway.Application.Cards.Queries;
 using PaymentGateway.Application.Common;
 using PaymentGateway.Application.Payments.Commands;
 using PaymentGateway.Domain;
@@ -30,9 +34,13 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
         [Fact]
         public async Task Handle_WhenEverythingIsValidAndNoPreviousPayments_ExpectedSuccessAsync()
         {
-            _mocker.GetMock<IBankRepository>()
-                  .Setup(x => x.IsValidPayment(It.IsAny<Payment>()))
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()))
                   .ReturnsAsync(true);
+
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetCardByNumber>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(Option<Domain.Card>.None);
 
             var paymentListMock = new List<Payment>();
 
@@ -40,42 +48,45 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                   .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
                   .ReturnsAsync(paymentListMock);
 
+            _mocker.GetMock<IPaymentRepository>()
+                  .Setup(x => x.SavePaymentAsync(It.IsAny<Payment>()))
+                  .ReturnsAsync(1);
+
             var requestMock = new CreatePayment
-            {
-                CardDetails = new CreatePayment.Card
-                {
-                    CVV = 541,
-                    Number = "1234567891234567",
-                    Expiration = new CreatePayment.ExpirationDate
-                    {
-                        Month = 1,
-                        Year = 2025,
-                    }
-                },
-                Value = new CreatePayment.Money
-                {
-                    Amount = 25,
-                    Currency = "EUR"
-                },
-                TimeStamp = DateTime.UtcNow,
-                UserId = Guid.NewGuid()
-            };
+                (
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                new Common.Money(25, "EUR"),
+                new Common.Card("1234567891234567", 541, new Common.ExpirationDate(2025, 1))
+                );
 
             var result = await _classUnderTest.Handle(requestMock, It.IsAny<CancellationToken>());
 
             result.ShouldBeRight(response => response.Should().Be(1));
+
+            _mocker.GetMock<IPaymentRepository>().Verify(x => x.SavePaymentAsync(It.IsAny<Payment>()), Times.Once);
         }
 
         [Fact]
         public async Task Handle_WhenEverythingIsValidWithExistingPreviousPayments_ExpectedSuccessAsync()
         {
-            _mocker.GetMock<IBankRepository>()
-                  .Setup(x => x.IsValidPayment(It.IsAny<Payment>()))
+            var userIdMock = Guid.NewGuid();
+
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()))
                   .ReturnsAsync(true);
+
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetCardByNumber>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(Option<Domain.Card>.None);
+
+            _mocker.GetMock<IPaymentRepository>()
+                  .Setup(x => x.SavePaymentAsync(It.IsAny<Payment>()))
+                  .ReturnsAsync(1);
 
             var paymentListMock = new List<Payment>()
             {
-                new Payment( Guid.NewGuid(), new Card("1234567891234567", 123, new ExpirationDate(2025,1)) , new Money(25,"EUR"), DateTime.UtcNow)
+                new Payment( Guid.NewGuid(), new Domain.Card(userIdMock,"1234567891234567", 123, new Domain.ExpirationDate(2025,1)) , new Domain.Money(25,"EUR"), DateTime.UtcNow)
             };
 
             _mocker.GetMock<IPaymentRepository>()
@@ -83,43 +94,37 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                       .ReturnsAsync(paymentListMock);
 
             var requestMock = new CreatePayment
-            {
-                CardDetails = new CreatePayment.Card
-                {
-                    CVV = 541,
-                    Number = "1234567891234567",
-                    Expiration = new CreatePayment.ExpirationDate
-                    {
-                        Month = 1,
-                        Year = 2025,
-                    }
-                },
-                Value = new CreatePayment.Money
-                {
-                    Amount = 25,
-                    Currency = "EUR"
-                },
-                TimeStamp = DateTime.UtcNow.AddSeconds(-10)
-            };
+                  (
+                  userIdMock,
+                  DateTime.UtcNow,
+                  new Common.Money(25, "EUR"),
+                  new Common.Card("1234567891234567", 541, new Common.ExpirationDate(2025, 1))
+                  );
 
             var result = await _classUnderTest.Handle(requestMock, It.IsAny<CancellationToken>());
 
             result.ShouldBeRight(response => response.Should().Be(1));
+
+            _mocker.GetMock<IPaymentRepository>().Verify(x => x.SavePaymentAsync(It.IsAny<Payment>()), Times.Once);
         }
 
         [Fact]
         public async Task Handle_WhenPaymentAlreadyExsist_ExpectedFailureAsync()
         {
-            _mocker.GetMock<IBankRepository>()
-                 .Setup(x => x.IsValidPayment(It.IsAny<Payment>()))
-                 .ReturnsAsync(true);
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(true);
+
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetCardByNumber>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(Option<Domain.Card>.None);
 
             var paymentTimeStampMock = DateTime.UtcNow;
             var userIdMock = Guid.NewGuid();
 
             var paymentListMock = new List<Payment>()
             {
-                new Payment(userIdMock, new Card("1234567891234567", 541, new ExpirationDate(2025,1)) , new Money(25,"EUR"), paymentTimeStampMock)
+                new Payment(userIdMock, new Domain.Card(userIdMock,"1234567891234567", 541, new Domain.ExpirationDate(2025,1)) , new Domain.Money(25,"EUR"), paymentTimeStampMock)
             };
 
             _mocker.GetMock<IPaymentRepository>()
@@ -127,25 +132,12 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                       .ReturnsAsync(paymentListMock);
 
             var requestMock = new CreatePayment
-            {
-                CardDetails = new CreatePayment.Card
-                {
-                    CVV = 541,
-                    Number = "1234567891234567",
-                    Expiration = new CreatePayment.ExpirationDate
-                    {
-                        Month = 1,
-                        Year = 2025,
-                    }
-                },
-                Value = new CreatePayment.Money
-                {
-                    Amount = 25,
-                    Currency = "EUR"
-                },
-                TimeStamp = paymentTimeStampMock,
-                UserId = userIdMock
-            };
+                  (
+                  userIdMock,
+                  paymentTimeStampMock,
+                  new Common.Money(25, "EUR"),
+                  new Common.Card("1234567891234567", 541, new Common.ExpirationDate(2025, 1))
+                  );
 
             var result = await _classUnderTest.Handle(requestMock, It.IsAny<CancellationToken>());
 
@@ -153,47 +145,49 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
             {
                 fail.Should().NotBeNull();
             });
+
+            _mocker.GetMock<IPaymentRepository>().Verify(x => x.SavePaymentAsync(It.IsAny<Payment>()), Times.Never);
+            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
         public async Task Handle_WhenSameCardDifferentUser_ExpectedFailureAsync()
         {
-            _mocker.GetMock<IBankRepository>()
-            .Setup(x => x.IsValidPayment(It.IsAny<Payment>()))
-            .ReturnsAsync(true);
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(true);
+
+            var cardResponseMock = new Domain.Card(Guid.NewGuid(), "1234567891234567", 541, new Domain.ExpirationDate(2025, 1));
+
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetCardByNumber>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(Option<Domain.Card>.Some(cardResponseMock));
 
             var paymentTimeStampMock = DateTime.UtcNow;
             var userIdMock = Guid.NewGuid();
 
             var paymentListMock = new List<Payment>()
             {
-                new Payment(Guid.NewGuid(), new Card("1234567891234567", 541, new ExpirationDate(2025,1)) , new Money(30,"EUR"), DateTime.UtcNow.AddSeconds(-10))
+                new Payment(Guid.NewGuid(), new Domain.Card(userIdMock, "1234567891234567", 541, new Domain.ExpirationDate(2025,1)) , new Domain.Money(30,"EUR"), DateTime.UtcNow.AddSeconds(-10))
             };
 
             _mocker.GetMock<IPaymentRepository>()
                       .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
                       .ReturnsAsync(paymentListMock);
 
+
+
+            _mocker.GetMock<ICardRepository>()
+                      .Setup(x => x.GetCardByNumberAsync(It.IsAny<string>()))
+                      .ReturnsAsync(cardResponseMock);
+
             var requestMock = new CreatePayment
-            {
-                CardDetails = new CreatePayment.Card
-                {
-                    CVV = 541,
-                    Number = "1234567891234567",
-                    Expiration = new CreatePayment.ExpirationDate
-                    {
-                        Month = 1,
-                        Year = 2025,
-                    }
-                },
-                Value = new CreatePayment.Money
-                {
-                    Amount = 25,
-                    Currency = "EUR"
-                },
-                TimeStamp = paymentTimeStampMock,
-                UserId = userIdMock
-            };
+                  (
+                  userIdMock,
+                  paymentTimeStampMock,
+                  new Common.Money(25, "EUR"),
+                  new Common.Card("1234567891234567", 541, new Common.ExpirationDate(2025, 1))
+                  );
 
             var result = await _classUnderTest.Handle(requestMock, It.IsAny<CancellationToken>());
 
@@ -201,14 +195,20 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
             {
                 fail.Should().NotBeNull();
             });
+            _mocker.GetMock<IPaymentRepository>().Verify(x => x.SavePaymentAsync(It.IsAny<Payment>()), Times.Never);
+            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
-        public async Task Hanlde_WhenBankValidationFails_ExpectedFailureAsync()
+        public async Task Hanlde_WhenBankValidationFails_ExpectedPaymentSaveAndFailureAsync()
         {
-            _mocker.GetMock<IBankRepository>()
-                  .Setup(x => x.IsValidPayment(It.IsAny<Payment>()))
-                  .ReturnsAsync(false);
+            _mocker.GetMock<IMediator>()
+                   .Setup(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()))
+                   .ReturnsAsync(false);
+
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetCardByNumber>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(Option<Domain.Card>.None);
 
             var paymentListMock = new List<Payment>();
 
@@ -216,26 +216,17 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
                   .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
                   .ReturnsAsync(paymentListMock);
 
+            _mocker.GetMock<IPaymentRepository>()
+                  .Setup(x => x.SavePaymentAsync(It.IsAny<Payment>()))
+                  .ReturnsAsync(1);
+
             var requestMock = new CreatePayment
-            {
-                CardDetails = new CreatePayment.Card
-                {
-                    CVV = 541,
-                    Number = "1234567891234567",
-                    Expiration = new CreatePayment.ExpirationDate
-                    {
-                        Month = 1,
-                        Year = 2025,
-                    }
-                },
-                Value = new CreatePayment.Money
-                {
-                    Amount = 25,
-                    Currency = "EUR"
-                },
-                TimeStamp = DateTime.UtcNow,
-                UserId = Guid.NewGuid()
-            };
+                  (
+                  Guid.NewGuid(),
+                  DateTime.UtcNow,
+                  new Common.Money(25, "EUR"),
+                  new Common.Card("1234567891234567", 541, new Common.ExpirationDate(2025, 1))
+                  );
 
             var result = await _classUnderTest.Handle(requestMock, It.IsAny<CancellationToken>());
 
@@ -243,6 +234,56 @@ namespace PaymentGateway.Application.Tests.Payments.Commands
             {
                 fail.Should().NotBeNull();
             });
+
+            _mocker.GetMock<IPaymentRepository>().Verify(x => x.SavePaymentAsync(It.IsAny<Payment>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_WhenPaymentAlreadyExistsAndCardAlreadyInUse_ExpectedFailAsync()
+        {
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(true);
+
+            var cardResponseMock = new Domain.Card(Guid.NewGuid(), "1234567891234567", 541, new Domain.ExpirationDate(2025, 1));
+
+            _mocker.GetMock<IMediator>()
+                  .Setup(x => x.Send(It.IsAny<GetCardByNumber>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(Option<Domain.Card>.Some(cardResponseMock));
+
+            var paymentTimeStampMock = DateTime.UtcNow;
+            var userIdMock = Guid.NewGuid();
+
+            var paymentListMock = new List<Payment>()
+            {
+                new Payment(userIdMock, new Domain.Card(userIdMock,"1234567891234567", 541, new Domain.ExpirationDate(2025,1)) , new Domain.Money(25,"EUR"), paymentTimeStampMock)
+            };
+
+            _mocker.GetMock<IPaymentRepository>()
+                  .Setup(x => x.GetPaymentsByUserIdAsync(It.IsAny<Guid>()))
+                  .ReturnsAsync(paymentListMock);
+
+            _mocker.GetMock<IPaymentRepository>()
+                  .Setup(x => x.SavePaymentAsync(It.IsAny<Payment>()))
+                  .ReturnsAsync(1);
+
+            var requestMock = new CreatePayment
+                (
+                userIdMock,
+                paymentTimeStampMock,
+                new Common.Money(25, "EUR"),
+                new Common.Card("1234567891234567", 541, new Common.ExpirationDate(2025, 1))
+                );
+
+            var result = await _classUnderTest.Handle(requestMock, It.IsAny<CancellationToken>());
+
+            result.ShouldBeLeft(fail =>
+            {
+                fail.Should().NotBeNull();
+            });
+
+            _mocker.GetMock<IPaymentRepository>().Verify(x => x.SavePaymentAsync(It.IsAny<Payment>()), Times.Never);
+            _mocker.GetMock<IMediator>().Verify(x => x.Send(It.IsAny<GetBankPaymentVerification>(), It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

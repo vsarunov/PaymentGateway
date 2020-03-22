@@ -12,23 +12,12 @@ namespace PaymentGateway.Application.Payments.Commands
         public Card CardDetails { get; set; }
         public Money Value { get; set; }
 
-        public class Money
+        public CreatePayment(Guid userId, DateTime timeStamp, Money value, Card card)
         {
-            public decimal Amount { get; set; }
-            public string Currency { get; set; }
-        }
-
-        public class Card
-        {
-            public string Number { get; set; }
-            public int CVV { get; set; }
-            public ExpirationDate Expiration { get; set; }
-        }
-
-        public class ExpirationDate
-        {
-            public int Year { get; set; }
-            public int Month { get; set; }
+            UserId = userId;
+            TimeStamp = timeStamp;
+            Value = value ?? throw new ArgumentNullException(nameof(value));
+            CardDetails = card ?? throw new ArgumentNullException(nameof(card));
         }
     }
 }

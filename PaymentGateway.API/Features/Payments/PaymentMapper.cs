@@ -1,8 +1,9 @@
 ﻿using PaymentGateway.Application.Payments.Commands;
-using PaymentGateway.Domain;
+using Payment = PaymentGateway.Domain.Payment;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PaymentGateway.Application.Common;
 
 namespace PaymentGateway.API.Features.Payments
 {
@@ -11,30 +12,36 @@ namespace PaymentGateway.API.Features.Payments
         internal static CreatePayment ToCommand(this CreatePaymentRequest request, Guid userId)
         {
             return new CreatePayment
-            {
-                CardDetails = new CreatePayment.Card
-                {
-                    CVV = request.CardDetails.CVV,
-                    Number = request.CardDetails.Number,
-                    Expiration = new CreatePayment.ExpirationDate
-                    {
-                        Month = request.CardDetails.Expiration.Month,
-                        Year = request.CardDetails.Expiration.Year,
-                    }
-                },
-                Value = new CreatePayment.Money
-                {
-                    Amount = request.Value.Amount,
-                    Currency = request.Value.ISOCurrencyCode
-                },
-                TimeStamp = request.TimeStamp,
-                UserId = userId
-            };
+                (
+                userId,
+                request.TimeStamp,
+                new Money(request.Value.Amount, request.Value.ISOCurrencyCode),
+                new Card
+                    (
+                    request.CardDetails.Number,
+                    request.CardDetails.CVV,
+                    new ExpirationDate
+                        (
+                        request.CardDetails.Expiration.Year,
+                        request.CardDetails.Expiration.Month
+                        )
+                    )
+                );
         }
 
         internal static IEnumerable<GetPaymentsResponse> ToResponse(this IEnumerable<Payment> entities)
         {
-            return entities.Select(x => new GetPaymentsResponse());
+            return entities.Select(x => new GetPaymentsResponse
+            {
+                Id = x.Id,
+                PaymentStatus = x.Status.ToString(),
+                CardNumber = new string(x.Card?.Number?.Select((p, index) => index <= 12 ? '*' : p).ToArray()),
+                Value = new GetPaymentsResponse.MoneyResponse
+                {
+                    Amount = x.Value.Amount,
+                    ISOCurrencyCode = x.Value.ISOCurrencyCode
+                }
+            });
         }
     }
 }

@@ -1,35 +1,43 @@
-﻿using System;
+﻿using LanguageExt;
+using PaymentGateway.Domain.Enums;
+using System;
 
 namespace PaymentGateway.Domain
 {
-    public class Payment
+    public class Payment : Record<Payment>
     {
         public long Id { get; }
         public Guid UserId { get; }
-        public Card CardDetails { get; }
+        public Card Card { get; }
         public Money Value { get; }
         public DateTime TimeStamp { get; }
+        public PaymentStatus Status { get; protected set; } = PaymentStatus.Fail;
 
-        public Payment(long id, Guid userId, Card cardDetails, Money value, DateTime timeStamp)
+        public Payment(long id, Guid userId, Card cardDetails, Money value, DateTime timeStamp, PaymentStatus status)
         {
             Id = id;
             UserId = userId;
-            CardDetails = cardDetails ?? throw new ArgumentNullException(nameof(cardDetails));
+            Card = cardDetails ?? throw new ArgumentNullException(nameof(cardDetails));
             Value = value ?? throw new ArgumentNullException(nameof(value));
             TimeStamp = timeStamp;
         }
 
-        public Payment(Guid userId, Card cardDetails, Money value, DateTime timeStamp)
+        public Payment(Guid userId, Card card, Money value, DateTime timeStamp)
         {
             UserId = userId;
-            CardDetails = cardDetails ?? throw new ArgumentNullException(nameof(cardDetails));
+            Card = card ?? throw new ArgumentNullException(nameof(card));
             Value = value ?? throw new ArgumentNullException(nameof(value));
             TimeStamp = timeStamp;
+        }
+
+        public void UpdateStatus(PaymentStatus status)
+        {
+            Status = status;
         }
 
         public override string ToString()
         {
-            return $"Payment{Id},{Value.Amount}.{Value.Currency},{TimeStamp}";
+            return $"Payment{Id},{Value.Amount}.{Value.ISOCurrencyCode},{TimeStamp},{Status}";
         }
     }
 }

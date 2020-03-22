@@ -11,7 +11,8 @@ namespace PaymentGateway.API.Extensions
         {
             return services
                 .AddScoped<IPaymentRepository, PaymentRepository>()
-                .AddScoped<IBankRepository, BankRepository>();
+                .AddScoped<IBankRepository, BankRepository>()
+                .AddScoped<ICardRepository, CardRepository>();
         }
     }
 }

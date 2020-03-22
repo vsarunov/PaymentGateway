@@ -6,7 +6,7 @@ namespace PaymentGateway.Infrastructure
 {
     public class BankRepository : IBankRepository
     {
-        public Task<bool> IsValidPayment(Payment payment)
+        public async Task<bool> IsValidPayment(Payment payment)
         {
             throw new NotImplementedException();
         }

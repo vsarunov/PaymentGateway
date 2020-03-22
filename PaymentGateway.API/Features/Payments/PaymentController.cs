@@ -29,7 +29,7 @@ namespace PaymentGateway.API.Features.Payments
         public async Task<ActionResult> CreatePaymentAsync([FromBody]CreatePaymentRequest request)
         {
             // This user Id getting could and should be done better. However just to keep the contract keeping it here.
-            var userId = User.FindFirst("sub")?.Value;
+            var userId = User?.FindFirst("sub")?.Value;
 
             if (userId == null)
             {
@@ -46,14 +46,14 @@ namespace PaymentGateway.API.Features.Payments
         public async Task<ActionResult<IEnumerable<GetPaymentsResponse>>> GetPaymentsAsync()
         {
             // This user Id getting could and should be done better. However just to keep the contract keeping it here.
-            var userId = User.FindFirst("sub")?.Value;
+            var userId = User?.FindFirst("sub")?.Value;
 
             if (userId == null)
             {
                 return BadRequest("User not identified");
             }
 
-            var result = await _mediator.Send(new GetPaymentsByUserId.Query(new Guid(userId)));
+            var result = await _mediator.Send(new GetPaymentsByUserId(new Guid(userId)));
 
             return Ok(result.ToResponse());
         }
